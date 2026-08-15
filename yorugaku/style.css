@@ -1,0 +1,882 @@
+/* 夜（既定） */
+:root,
+[data-theme="yoru"] {
+  --bg: #15131F;
+  --card: #1F1C2E;
+  --card-lift: #272338;
+  --text: #E6E3F0;
+  --text-dim: #A29CBA;
+  --text-faint: #8983A1;
+  --accent: #8B7FE8;
+  --accent-hover: #9C92F0;
+  --accent-dim: #6B60C4;
+  --correct: #4E9E7E;
+  --wrong: #C4636B;
+  --line: #302B45;
+  --img-bg: #0F0D16;
+  /* accent / correct / wrong を背景に敷いたときの文字色 */
+  --on-accent: #14121C;
+  /* accent-dim を背景に敷いたときの文字色 */
+  --on-accent-dim: #FFFFFF;
+  --on-accent-dim-sub: #F4F2FB;
+}
+
+/* 藍 */
+[data-theme="ai"] {
+  --bg: #101823;
+  --card: #182433;
+  --card-lift: #1F2E40;
+  --text: #DDE6F0;
+  --text-dim: #94A7BC;
+  --text-faint: #7B8EA3;
+  --accent: #5B9BD5;
+  --accent-hover: #74AEE2;
+  --accent-dim: #3F76A8;
+  --correct: #4E9E7E;
+  --wrong: #C4636B;
+  --line: #24344A;
+  --img-bg: #0B121B;
+  --on-accent: #0B121B;
+  --on-accent-dim: #FFFFFF;
+  --on-accent-dim-sub: #F6F9FC;
+}
+
+/* 墨 */
+[data-theme="sumi"] {
+  --bg: #17171A;
+  --card: #212125;
+  --card-lift: #2A2A2F;
+  --text: #E4E4E6;
+  --text-dim: #A0A0A6;
+  --text-faint: #87878F;
+  --accent: #B9B9C0;
+  --accent-hover: #CFCFD5;
+  --accent-dim: #5A5A62;
+  --correct: #6B9B84;
+  --wrong: #B87B80;
+  --line: #303036;
+  --img-bg: #101012;
+  --on-accent: #17171A;
+  --on-accent-dim: #FFFFFF;
+  --on-accent-dim-sub: #D6D6DA;
+}
+
+/* 灯 */
+[data-theme="tomoshibi"] {
+  --bg: #17120E;
+  --card: #201A15;
+  --card-lift: #2A231C;
+  --text: #EDE2D5;
+  --text-dim: #B3A08C;
+  --text-faint: #94816F;
+  --accent: #D19A5B;
+  --accent-hover: #DFAE73;
+  --accent-dim: #8F6532;
+  --correct: #6E9B6A;
+  --wrong: #C4736B;
+  --line: #322820;
+  --img-bg: #100C09;
+  --on-accent: #17120E;
+  --on-accent-dim: #FFFFFF;
+  --on-accent-dim-sub: #F7F1E7;
+}
+
+/* 朝（明るい配色） */
+[data-theme="asa"] {
+  --bg: #F6EFE4;
+  --card: #FFFBF5;
+  --card-lift: #FFF6E9;
+  --text: #2A231D;
+  --text-dim: #6E6157;
+  --text-faint: #76695F;
+  --accent: #9A6A35;
+  --accent-hover: #7E5629;
+  --accent-dim: #8A5E2D;
+  --correct: #3C775B;
+  --wrong: #A8434B;
+  --line: #E0D5C5;
+  --img-bg: #EFE7DA;
+  --on-accent: #FFFBF5;
+  --on-accent-dim: #FFFFFF;
+  --on-accent-dim-sub: #F2E4D0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+.stage {
+  min-height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 20px;
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  max-width: 420px;
+}
+
+.screen.is-active {
+  display: block;
+}
+
+/* ---------- 共通パーツ ---------- */
+
+.eyebrow {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  margin: 0 0 6px;
+}
+
+h1 {
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0 0 32px;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 24px;
+}
+
+.count {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-faint);
+  margin-left: 4px;
+}
+
+.primary-btn {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: var(--on-accent);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.primary-btn:hover,
+.primary-btn:focus-visible {
+  background: var(--accent-hover);
+  outline: none;
+}
+
+.ghost-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.ghost-btn:hover,
+.ghost-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+  outline: none;
+}
+
+.back-btn {
+  display: inline-block;
+  margin: 0 0 20px -8px;
+  padding: 13px 10px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.back-btn:hover,
+.back-btn:focus-visible {
+  color: var(--text-dim);
+  outline: none;
+}
+
+/* ---------- ホーム ---------- */
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tile {
+  display: block;
+  width: 100%;
+  padding: 20px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.tile:hover,
+.tile:focus-visible {
+  background: var(--card-lift);
+  border-color: var(--accent-dim);
+  outline: none;
+}
+
+.tile-main {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+  color: var(--on-accent-dim);
+}
+
+.tile-main:hover,
+.tile-main:focus-visible {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.tile-main:hover .tile-sub,
+.tile-main:focus-visible .tile-sub {
+  color: var(--on-accent);
+}
+
+.tile-title {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.tile-sub {
+  display: block;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.tile-main .tile-sub {
+  color: var(--on-accent-dim-sub);
+}
+
+.tile:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ---------- 設定 ---------- */
+
+.home-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.home-head h1 {
+  margin-bottom: 0;
+}
+
+.home-head + .menu {
+  margin-top: 32px;
+}
+
+.settings-btn {
+  flex-shrink: 0;
+  padding: 13px 14px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.settings-btn:hover,
+.settings-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+  outline: none;
+}
+
+.setting-group {
+  margin-bottom: 32px;
+}
+
+.setting-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin: 0 0 12px;
+}
+
+.theme-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.theme-row:hover,
+.theme-row:focus-visible {
+  background: var(--card-lift);
+  border-color: var(--accent-dim);
+  outline: none;
+}
+
+.theme-row[aria-pressed="true"] {
+  border-color: var(--accent);
+}
+
+.theme-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+
+.theme-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.theme-name {
+  flex: 1;
+}
+
+.theme-check {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--accent);
+  visibility: hidden;
+}
+
+.theme-row[aria-pressed="true"] .theme-check {
+  visibility: visible;
+}
+
+.setting-note {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 12px 0 0;
+}
+
+/* ---------- 入力 ---------- */
+
+.field {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+textarea {
+  width: 100%;
+  padding: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.7;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.attach {
+  margin-top: 8px;
+}
+
+.attach-btn {
+  padding: 13px 16px;
+  background: none;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.attach-btn:hover,
+.attach-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+  outline: none;
+}
+
+.preview {
+  margin-top: 10px;
+}
+
+.preview img {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  background: var(--img-bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.remove-img {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 13px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text-faint);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.remove-img:hover,
+.remove-img:focus-visible {
+  border-color: var(--wrong);
+  color: var(--wrong);
+  outline: none;
+}
+
+.error {
+  color: var(--wrong);
+  font-size: 13px;
+  margin: 0;
+}
+
+.saved-note {
+  color: var(--correct);
+  font-size: 14px;
+  text-align: center;
+  margin: 16px 0 0;
+}
+
+/* ---------- 一覧 ---------- */
+
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 56vh;
+  overflow-y: auto;
+}
+
+/* 問題文は幅を取りたいので、操作ボタンは横に並べず下の行に置く */
+.q-item {
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.q-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.q-thumb {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  background: var(--img-bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.q-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.q-text-muted {
+  color: var(--text-faint);
+}
+
+.q-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.q-meta {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 0;
+  min-width: 0;
+}
+
+.q-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.icon-btn:hover,
+.icon-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+  outline: none;
+}
+
+.icon-btn.danger:hover,
+.icon-btn.danger:focus-visible {
+  border-color: var(--wrong);
+  color: var(--wrong);
+}
+
+.empty {
+  color: var(--text-faint);
+  font-size: 14px;
+  text-align: center;
+  padding: 32px 0;
+  margin: 0;
+}
+
+.storage-note {
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: right;
+  margin: 10px 0 0;
+}
+
+/* ---------- バックアップ ---------- */
+
+.backup {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.backup-note {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 0 0 10px;
+}
+
+.backup-note.is-stale {
+  color: var(--wrong);
+}
+
+.backup-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.sub-btn {
+  flex: 1;
+  padding: 14px 8px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.sub-btn:hover,
+.sub-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+  outline: none;
+}
+
+.sub-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.sub-btn:disabled:hover {
+  border-color: var(--line);
+  color: var(--text-dim);
+}
+
+.backup-result {
+  font-size: 13px;
+  color: var(--correct);
+  margin: 12px 0 0;
+}
+
+.backup-result.is-error {
+  color: var(--wrong);
+}
+
+/* ---------- 出題 ---------- */
+
+.quiz-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quiz-head .back-btn {
+  margin-bottom: 0;
+}
+
+.progress-text {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.progress-bar {
+  height: 3px;
+  margin: 12px 0 24px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.card {
+  padding: 20px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.card-answer {
+  border-color: var(--accent-dim);
+}
+
+.card-label {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+  margin: 0 0 10px;
+}
+
+.card-text {
+  font-size: 17px;
+  line-height: 1.8;
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.card-img {
+  display: block;
+  width: 100%;
+  max-height: 46vh;
+  object-fit: contain;
+  background: var(--img-bg);
+  border-radius: 8px;
+}
+
+.card-text:not([hidden]) + .card-img {
+  margin-top: 12px;
+}
+
+.judge {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.judge-btn {
+  flex: 1;
+  padding: 16px 8px;
+  border: 1px solid;
+  border-radius: 10px;
+  background: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.judge-correct {
+  border-color: var(--correct);
+  color: var(--correct);
+}
+
+.judge-correct:hover,
+.judge-correct:focus-visible {
+  background: var(--correct);
+  color: var(--on-accent);
+  outline: none;
+}
+
+.judge-wrong {
+  border-color: var(--wrong);
+  color: var(--wrong);
+}
+
+.judge-wrong:hover,
+.judge-wrong:focus-visible {
+  background: var(--wrong);
+  color: var(--on-accent);
+  outline: none;
+}
+
+/* ---------- 完了 ---------- */
+
+#screen-result {
+  text-align: center;
+}
+
+.rate {
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--accent);
+  margin: 8px 0 4px;
+}
+
+.rate-unit {
+  font-size: 22px;
+  margin-left: 2px;
+}
+
+.rate-label {
+  font-size: 13px;
+  color: var(--text-faint);
+  margin: 0 0 28px;
+}
+
+.summary {
+  display: flex;
+  gap: 10px;
+}
+
+.summary-item {
+  flex: 1;
+  padding: 16px 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.summary-num {
+  display: block;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.summary-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.note {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 24px 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

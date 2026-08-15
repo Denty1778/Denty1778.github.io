@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#15131F">
+<title>睡眠学習ツール</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="stage">
+
+    <!-- ホーム -->
+    <section id="screen-home" class="screen is-active">
+      <div class="home-head">
+        <div>
+          <p class="eyebrow">寝る前の復習で、記憶を定着。</p>
+          <h1>睡眠学習ツール</h1>
+        </div>
+        <button type="button" class="settings-btn" id="go-settings">設定</button>
+      </div>
+
+      <div class="menu">
+        <button type="button" id="go-quiz" class="tile tile-main">
+          <span class="tile-title">今夜解く</span>
+          <span class="tile-sub" id="quiz-sub">ランダムに出題を開始</span>
+        </button>
+        <button type="button" id="go-save" class="tile">
+          <span class="tile-title">問題を保存する</span>
+          <span class="tile-sub">新しい問題を追加</span>
+        </button>
+        <button type="button" id="go-list" class="tile">
+          <span class="tile-title">問題一覧</span>
+          <span class="tile-sub" id="list-sub">保存した問題を確認・管理</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- 設定 -->
+    <section id="screen-settings" class="screen">
+      <button type="button" class="back-btn" data-back="home">← もどる</button>
+      <h2>設定</h2>
+
+      <div class="setting-group">
+        <h3 class="setting-title">配色</h3>
+        <div class="theme-list" id="theme-list"></div>
+        <p class="setting-note">寝る前に開くなら、暗い配色のほうが目が冴えにくくなります。</p>
+      </div>
+    </section>
+
+    <!-- 問題の保存・編集 -->
+    <section id="screen-save" class="screen">
+      <button type="button" class="back-btn" data-back="home">← もどる</button>
+      <h2 id="save-title">問題を保存する</h2>
+
+      <form id="save-form">
+        <div class="field">
+          <span class="label">問題</span>
+          <textarea id="input-question" rows="3" maxlength="500" placeholder="問題文を入力してください"></textarea>
+          <div class="attach">
+            <button type="button" class="attach-btn" id="attach-question">画像を追加</button>
+            <input type="file" accept="image/*" id="file-question" hidden>
+          </div>
+          <div class="preview" id="preview-question" hidden>
+            <img id="preview-question-img" alt="問題の画像">
+            <button type="button" class="remove-img" id="remove-question">画像を外す</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="label">解答</span>
+          <textarea id="input-answer" rows="3" maxlength="500" placeholder="解答を入力してください"></textarea>
+          <div class="attach">
+            <button type="button" class="attach-btn" id="attach-answer">画像を追加</button>
+            <input type="file" accept="image/*" id="file-answer" hidden>
+          </div>
+          <div class="preview" id="preview-answer" hidden>
+            <img id="preview-answer-img" alt="解答の画像">
+            <button type="button" class="remove-img" id="remove-answer">画像を外す</button>
+          </div>
+        </div>
+
+        <p class="error" id="save-error" hidden></p>
+
+        <button type="submit" class="primary-btn" id="save-btn">保存する</button>
+      </form>
+      <p class="saved-note" id="saved-note" hidden>保存しました。</p>
+    </section>
+
+    <!-- 問題一覧 -->
+    <section id="screen-list" class="screen">
+      <button type="button" class="back-btn" data-back="home">← もどる</button>
+      <h2>問題一覧 <span class="count" id="list-count"></span></h2>
+
+      <div id="question-list" class="question-list"></div>
+
+      <p class="storage-note" id="storage-note"></p>
+
+      <button type="button" id="add-from-list" class="primary-btn">＋ 新しい問題を追加</button>
+
+      <div class="backup">
+        <p class="backup-note" id="backup-note"></p>
+        <div class="backup-btns">
+          <button type="button" class="sub-btn" id="export-btn">バックアップを保存</button>
+          <button type="button" class="sub-btn" id="import-btn">バックアップから復元</button>
+          <input type="file" accept="application/json,.json" id="file-import" hidden>
+        </div>
+        <p class="backup-result" id="backup-result" hidden></p>
+      </div>
+    </section>
+
+    <!-- 出題 -->
+    <section id="screen-quiz" class="screen">
+      <div class="quiz-head">
+        <button type="button" class="back-btn" data-back="home">× やめる</button>
+        <span class="progress-text" id="progress-text"></span>
+      </div>
+      <div class="progress-bar"><span id="progress-fill"></span></div>
+
+      <div class="card">
+        <p class="card-label">問題</p>
+        <p class="card-text" id="quiz-question"></p>
+        <img class="card-img" id="quiz-question-img" alt="問題の画像" hidden>
+      </div>
+
+      <div class="card card-answer" id="answer-card" hidden>
+        <p class="card-label">解答</p>
+        <p class="card-text" id="quiz-answer"></p>
+        <img class="card-img" id="quiz-answer-img" alt="解答の画像" hidden>
+      </div>
+
+      <button type="button" id="reveal-btn" class="primary-btn">解答を見る</button>
+
+      <div class="judge" id="judge" hidden>
+        <button type="button" id="correct-btn" class="judge-btn judge-correct">正解だった</button>
+        <button type="button" id="wrong-btn" class="judge-btn judge-wrong">間違えた</button>
+      </div>
+    </section>
+
+    <!-- 完了 -->
+    <section id="screen-result" class="screen">
+      <h2>学習完了</h2>
+
+      <p class="rate"><span id="rate-num">0</span><span class="rate-unit">%</span></p>
+      <p class="rate-label" id="rate-detail"></p>
+
+      <div class="summary">
+        <div class="summary-item"><span class="summary-num" id="sum-total">0</span><span class="summary-label">解いた</span></div>
+        <div class="summary-item"><span class="summary-num" id="sum-correct">0</span><span class="summary-label">正解</span></div>
+        <div class="summary-item"><span class="summary-num" id="sum-wrong">0</span><span class="summary-label">間違い</span></div>
+      </div>
+
+      <p class="note" id="result-note"></p>
+
+      <button type="button" id="again-btn" class="primary-btn">もう一度解く</button>
+      <button type="button" class="ghost-btn" data-back="home">ホームに戻る</button>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
