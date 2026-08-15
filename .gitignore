@@ -4,3 +4,6 @@
 
 !.gitignore
 !yorugaku/
+
+# 読み上げの実機検証用。検証が終わったら消す
+!voice-test/

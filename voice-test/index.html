@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#15131F">
+<title>読み上げ検証</title>
+<style>
+  :root {
+    --bg: #15131F; --card: #1F1C2E; --text: #E6E3F0; --dim: #A29CBA;
+    --faint: #8983A1; --accent: #8B7FE8; --line: #302B45; --ok: #4E9E7E; --ng: #C4636B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px 60px; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.7;
+  }
+  .wrap { max-width: 420px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .lead { color: var(--dim); font-size: 13px; margin: 0 0 24px; }
+  .box { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .label { display: block; font-size: 12px; color: var(--faint); margin-bottom: 6px; }
+  select, input[type=range] { width: 100%; }
+  select {
+    padding: 12px; background: var(--bg); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 15px;
+  }
+  button {
+    width: 100%; padding: 16px; margin-top: 10px; border: none; border-radius: 10px;
+    background: var(--accent); color: #14121C; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  button.sub { background: none; border: 1px solid var(--line); color: var(--dim); }
+  .step { font-size: 13px; color: var(--dim); margin: 0 0 10px; }
+  .step b { color: var(--text); }
+  #log {
+    font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.6;
+    max-height: 300px; overflow-y: auto; margin: 0; white-space: pre-wrap; color: var(--dim);
+  }
+  .ok { color: var(--ok); }
+  .ng { color: var(--ng); }
+  .env { font-size: 12px; color: var(--faint); margin: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>読み上げ検証</h1>
+  <p class="lead">iPhoneで「画面を消しても読み上げが続くか」を確かめるためのページです。</p>
+
+  <div class="box">
+    <p class="step"><b>手順1.</b> 音声と速さを選ぶ</p>
+    <span class="label">音声</span>
+    <select id="voice"></select>
+    <span class="label" style="margin-top:14px">速さ <span id="rate-val">1.0</span></span>
+    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
+  </div>
+
+  <div class="box">
+    <p class="step"><b>手順2.</b> 「20問ぶん読み上げ」を押す（約3分かかります）</p>
+    <p class="step"><b>手順3.</b> 読み上げが始まったら <b>電源ボタンで画面を消す</b></p>
+    <p class="step"><b>手順4.</b> 30秒ほど待ってから画面をつけ、下のログを見る</p>
+    <button id="start">20問ぶん読み上げ</button>
+    <button id="stop" class="sub">とめる</button>
+  </div>
+
+  <div class="box">
+    <span class="label">ログ（画面を消している間の記録が残ります）</span>
+    <pre id="log">まだ始めていません。</pre>
+  </div>
+
+  <div class="box">
+    <span class="label">この端末の情報</span>
+    <p class="env" id="env"></p>
+  </div>
+
+</div>
+
+<script>
+const logEl = document.getElementById("log");
+const voiceSel = document.getElementById("voice");
+const rateInput = document.getElementById("rate");
+const rateVal = document.getElementById("rate-val");
+const envEl = document.getElementById("env");
+
+let lines = [];
+let startedAt = 0;
+let running = false;
+
+function stamp() {
+  return ((Date.now() - startedAt) / 1000).toFixed(1).padStart(5, " ") + "秒";
+}
+
+function log(text, cls) {
+  lines.push((cls ? `<span class="${cls}">` : "") + stamp() + "  " + text + (cls ? "</span>" : ""));
+  logEl.innerHTML = lines.join("\n");
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+let voices = [];
+function loadVoices() {
+  voices = speechSynthesis.getVoices().filter((v) => v.lang.indexOf("ja") === 0);
+  voiceSel.innerHTML = "";
+  if (voices.length === 0) {
+    const o = document.createElement("option");
+    o.textContent = "日本語の音声が見つかりません";
+    voiceSel.appendChild(o);
+    return;
+  }
+  voices.forEach((v, i) => {
+    const o = document.createElement("option");
+    o.value = String(i);
+    o.textContent = v.name + (v.localService ? "（端末内）" : "（ネット経由）");
+    voiceSel.appendChild(o);
+  });
+}
+loadVoices();
+speechSynthesis.onvoiceschanged = loadVoices;
+
+rateInput.addEventListener("input", () => { rateVal.textContent = Number(rateInput.value).toFixed(1); });
+
+const items = [];
+for (let i = 1; i <= 20; i++) {
+  items.push({ q: `第${i}問。エススリーの特徴を三つ挙げよ。`, a: `解答。高耐久、スケーラブル、従量課金。` });
+}
+
+function speak(text) {
+  return new Promise((resolve) => {
+    const u = new SpeechSynthesisUtterance(text);
+    const v = voices[Number(voiceSel.value)];
+    if (v) u.voice = v;
+    u.lang = "ja-JP";
+    u.rate = Number(rateInput.value);
+    u.onstart = () => log("読み上げ開始: " + text.slice(0, 14));
+    u.onend = () => resolve("end");
+    u.onerror = (e) => { log("エラー: " + e.error, "ng"); resolve("error"); };
+    speechSynthesis.speak(u);
+  });
+}
+
+const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+
+document.getElementById("start").addEventListener("click", async () => {
+  if (running) return;
+  running = true;
+  lines = [];
+  startedAt = Date.now();
+  log("開始しました。ここで画面を消してください。", "ok");
+
+  for (let i = 0; i < items.length && running; i++) {
+    const r1 = await speak(items[i].q);
+    if (!running) break;
+    if (r1 === "error") { log("中断しました", "ng"); break; }
+    await pause(2500);
+    if (!running) break;
+    await speak(items[i].a);
+    await pause(1200);
+  }
+  if (running) log("最後まで終わりました。", "ok");
+  running = false;
+});
+
+document.getElementById("stop").addEventListener("click", () => {
+  running = false;
+  speechSynthesis.cancel();
+  log("とめました", "ng");
+});
+
+// 画面を消した/戻したタイミングも記録する
+document.addEventListener("visibilitychange", () => {
+  if (startedAt) log(document.hidden ? "--- 画面が消えた（またはアプリが背面に）---" : "--- 画面が戻った ---", "ok");
+});
+
+envEl.textContent =
+  (/iPhone|iPad/.test(navigator.userAgent) ? "iOS" : /Android/.test(navigator.userAgent) ? "Android" : "PC") +
+  " / 日本語音声 " + speechSynthesis.getVoices().filter((v) => v.lang.indexOf("ja") === 0).length + "件" +
+  " / speechSynthesis " + ("speechSynthesis" in window ? "あり" : "なし");
+</script>
+</body>
+</html>
