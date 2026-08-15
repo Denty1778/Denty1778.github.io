@@ -56,11 +56,18 @@
   </div>
 
   <div class="box">
-    <p class="step"><b>手順2.</b> 「20問ぶん読み上げ」を押す（約3分かかります）</p>
-    <p class="step"><b>手順3.</b> 読み上げが始まったら <b>電源ボタンで画面を消す</b></p>
-    <p class="step"><b>手順4.</b> 30秒ほど待ってから画面をつけ、下のログを見る</p>
-    <button id="start">20問ぶん読み上げ</button>
+    <p class="step"><b>検証1</b>（済）電源ボタンで画面を消す → <b>止まることが分かりました</b></p>
+    <button id="start" class="sub">20問ぶん読み上げ（そのまま）</button>
     <button id="stop" class="sub">とめる</button>
+  </div>
+
+  <div class="box">
+    <p class="step"><b>検証2.</b> 画面が自動で消えるのを防いでから読み上げます</p>
+    <p class="step"><b>手順1.</b> 下のボタンを押す</p>
+    <p class="step"><b>手順2.</b> <b>電源ボタンは押さずに</b>、スマホを<b>伏せて置く</b></p>
+    <p class="step"><b>手順3.</b> 自動ロックの時間（設定→画面表示と明るさ→自動ロック）より長く放置する</p>
+    <p class="step"><b>手順4.</b> 戻ってきてログを見る</p>
+    <button id="start-lock">画面を消さないモードで読み上げ</button>
   </div>
 
   <div class="box">
@@ -119,7 +126,8 @@ function showEnv() {
   envEl.textContent =
     (/iPhone|iPad/.test(navigator.userAgent) ? "iOS" : /Android/.test(navigator.userAgent) ? "Android" : "PC") +
     " / 日本語音声 " + voices.length + "件" +
-    " / speechSynthesis " + ("speechSynthesis" in window ? "あり" : "なし");
+    " / speechSynthesis " + ("speechSynthesis" in window ? "あり" : "なし") +
+    " / 画面ロック防止 " + ("wakeLock" in navigator ? "対応" : "非対応");
 }
 
 function refresh() {
@@ -152,13 +160,33 @@ function speak(text) {
 
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
-document.getElementById("start").addEventListener("click", async () => {
-  if (running) return;
-  running = true;
-  lines = [];
-  startedAt = Date.now();
-  log("開始しました。ここで画面を消してください。", "ok");
+// 画面が自動で消えるのを防ぐ（電源ボタンでの手動ロックは防げない）
+let wakeLock = null;
 
+async function requestWakeLock() {
+  if (!("wakeLock" in navigator)) {
+    log("この端末は画面ロック防止に対応していません", "ng");
+    return false;
+  }
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+    log("画面ロック防止を取得しました", "ok");
+    wakeLock.addEventListener("release", () => log("画面ロック防止が解除されました", "ng"));
+    return true;
+  } catch (e) {
+    log("画面ロック防止を取得できません: " + e.name, "ng");
+    return false;
+  }
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release();
+    wakeLock = null;
+  }
+}
+
+async function run() {
   for (let i = 0; i < items.length && running; i++) {
     const r1 = await speak(items[i].q);
     if (!running) break;
@@ -170,17 +198,42 @@ document.getElementById("start").addEventListener("click", async () => {
   }
   if (running) log("最後まで終わりました。", "ok");
   running = false;
+  releaseWakeLock();
+}
+
+function begin(message) {
+  if (running) return false;
+  running = true;
+  lines = [];
+  startedAt = Date.now();
+  log(message, "ok");
+  return true;
+}
+
+document.getElementById("start").addEventListener("click", () => {
+  if (begin("開始しました。ここで画面を消してください。")) run();
+});
+
+document.getElementById("start-lock").addEventListener("click", async () => {
+  if (!begin("開始しました。電源ボタンは押さず、伏せて置いてください。")) return;
+  await requestWakeLock();
+  run();
 });
 
 document.getElementById("stop").addEventListener("click", () => {
   running = false;
   speechSynthesis.cancel();
+  releaseWakeLock();
   log("とめました", "ng");
 });
 
 // 画面を消した/戻したタイミングも記録する
-document.addEventListener("visibilitychange", () => {
+document.addEventListener("visibilitychange", async () => {
   if (startedAt) log(document.hidden ? "--- 画面が消えた（またはアプリが背面に）---" : "--- 画面が戻った ---", "ok");
+  // 画面が戻ったときロックは解除済みなので取り直す
+  if (!document.hidden && running && wakeLock === null && "wakeLock" in navigator) {
+    await requestWakeLock();
+  }
 });
 
 </script>
