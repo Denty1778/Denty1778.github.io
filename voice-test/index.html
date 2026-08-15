@@ -113,8 +113,21 @@ function loadVoices() {
     voiceSel.appendChild(o);
   });
 }
-loadVoices();
-speechSynthesis.onvoiceschanged = loadVoices;
+
+// 音声一覧は読み込み直後は空のことがあるので、揃ってから数え直す
+function showEnv() {
+  envEl.textContent =
+    (/iPhone|iPad/.test(navigator.userAgent) ? "iOS" : /Android/.test(navigator.userAgent) ? "Android" : "PC") +
+    " / 日本語音声 " + voices.length + "件" +
+    " / speechSynthesis " + ("speechSynthesis" in window ? "あり" : "なし");
+}
+
+function refresh() {
+  loadVoices();
+  showEnv();
+}
+refresh();
+speechSynthesis.onvoiceschanged = refresh;
 
 rateInput.addEventListener("input", () => { rateVal.textContent = Number(rateInput.value).toFixed(1); });
 
@@ -170,10 +183,6 @@ document.addEventListener("visibilitychange", () => {
   if (startedAt) log(document.hidden ? "--- 画面が消えた（またはアプリが背面に）---" : "--- 画面が戻った ---", "ok");
 });
 
-envEl.textContent =
-  (/iPhone|iPad/.test(navigator.userAgent) ? "iOS" : /Android/.test(navigator.userAgent) ? "Android" : "PC") +
-  " / 日本語音声 " + speechSynthesis.getVoices().filter((v) => v.lang.indexOf("ja") === 0).length + "件" +
-  " / speechSynthesis " + ("speechSynthesis" in window ? "あり" : "なし");
 </script>
 </body>
 </html>
