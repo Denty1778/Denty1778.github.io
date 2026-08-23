@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F2E9D8">
+<title>足あと</title>
+<meta name="description" content="今日の出来事を短く書くと、地図の上を旅人が進みます。書いた内容がそのまま地図の形になる日記。">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="足あと">
+<meta property="og:description" content="今日の出来事を短く書くと、地図の上を旅人が進みます。書いた内容がそのまま地図の形になる日記。">
+<meta property="og:url" content="https://denty1778.github.io/ashiato/">
+<meta property="og:site_name" content="足あと">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="stage">
+
+    <!-- 地図（ホーム） -->
+    <section id="screen-map" class="screen is-active">
+      <div class="map-head">
+        <div>
+          <h1>足あと</h1>
+          <p class="traveler" id="traveler">旅人はまだ歩きだしていません。</p>
+        </div>
+        <button type="button" class="icon-text-btn" id="go-settings">設定</button>
+      </div>
+
+      <div class="map-frame">
+        <svg id="map" viewBox="0 0 100 100" role="img" aria-label="これまでの足あとの地図"></svg>
+        <p class="map-empty" id="map-empty">最初の一歩はここから。</p>
+      </div>
+
+      <p class="stat" id="stat"></p>
+
+      <button type="button" class="primary-btn" id="go-write">今日を記録する</button>
+      <button type="button" class="ghost-btn" id="go-list">これまでの記録</button>
+    </section>
+
+    <!-- 記録 -->
+    <section id="screen-write" class="screen">
+      <button type="button" class="back-btn" data-back="map">← もどる</button>
+      <h2 id="write-title">今日の出来事</h2>
+      <p class="date" id="write-date"></p>
+
+      <form id="write-form">
+        <textarea id="input-text" rows="5" maxlength="400" placeholder="なにがありましたか。ひとことでも構いません。"></textarea>
+        <p class="counter" id="counter">0文字</p>
+
+        <span class="label">タグ（方角が決まります）</span>
+        <div class="tag-picker" id="tag-picker"></div>
+
+        <div class="tag-add">
+          <input type="text" id="new-tag" maxlength="12" placeholder="タグを追加" autocomplete="off">
+          <button type="button" id="add-tag" class="sub-btn">追加</button>
+        </div>
+
+        <p class="error" id="write-error" hidden></p>
+        <button type="submit" class="primary-btn" id="write-btn">記録する</button>
+      </form>
+    </section>
+
+    <!-- 記録したあと -->
+    <section id="screen-done" class="screen">
+      <h2 id="done-title">今日のぶん、進みました</h2>
+      <p class="done-steps" id="done-steps"></p>
+      <p class="done-note" id="done-note"></p>
+      <button type="button" class="primary-btn" data-back="map">地図を見る</button>
+    </section>
+
+    <!-- ランドマーク詳細 -->
+    <section id="screen-detail" class="screen">
+      <button type="button" class="back-btn" data-back="map">← 地図へ</button>
+      <p class="detail-type" id="detail-type"></p>
+      <h2 id="detail-date"></h2>
+      <div class="detail-tags" id="detail-tags"></div>
+      <p class="detail-text" id="detail-text"></p>
+    </section>
+
+    <!-- 一覧 -->
+    <section id="screen-list" class="screen">
+      <button type="button" class="back-btn" data-back="map">← もどる</button>
+      <h2>これまでの記録 <span class="count" id="list-count"></span></h2>
+      <div id="entry-list" class="entry-list"></div>
+    </section>
+
+    <!-- 設定 -->
+    <section id="screen-settings" class="screen">
+      <button type="button" class="back-btn" data-back="map">← もどる</button>
+      <h2>設定</h2>
+
+      <div class="setting-group">
+        <h3 class="setting-title">タグと方角</h3>
+        <p class="setting-note">タグごとに進む方角が決まっています。地図の形は、どのタグをよく使うかで変わります。</p>
+        <div id="tag-manage" class="tag-manage"></div>
+        <div class="tag-add">
+          <input type="text" id="new-tag-2" maxlength="12" placeholder="タグを追加" autocomplete="off">
+          <button type="button" id="add-tag-2" class="sub-btn">追加</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <h3 class="setting-title">データ</h3>
+        <p class="setting-note" id="storage-note"></p>
+        <div class="backup-btns">
+          <button type="button" class="sub-btn" id="export-btn">バックアップを保存</button>
+          <button type="button" class="sub-btn" id="import-btn">バックアップから復元</button>
+          <input type="file" accept="application/json,.json" id="file-import" hidden>
+        </div>
+        <p class="backup-result" id="backup-result" hidden></p>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
