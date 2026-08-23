@@ -13,7 +13,8 @@ const MULT_UP = 0.05;      // 1日続けるごとに上がる分
 const MULT_DOWN = 0.1;     // 猶予を過ぎたあと1日ごとに下がる分
 const GRACE_DAYS = 7;      // 書かなくても倍率が下がらない日数
 
-const STEPS_PER_LANDMARK = 200;
+// 実測: 40〜110文字くらいの日記だと、最初の1つが5日目、以降は2〜3日おきに生まれる
+const STEPS_PER_LANDMARK = 80;
 const LANDMARK_TYPES = ["町", "湖", "峠", "森", "岬"];
 
 // 追加タグに方角を配る角度。黄金角なので、増えても方角が固まりにくい
@@ -316,19 +317,26 @@ function drawMap() {
     );
   });
 
-  // ランドマーク
+  // ランドマーク。軌跡が折り返して近づくことがあるので、
+  // 名前が重なる場合は丸だけ描く（押せば名前は読める）
+  const labeled = [];
   data.landmarks.forEach((lm) => {
     const g = make("g", { class: "landmark-hit" });
     g.appendChild(make("circle", { cx: lm.x, cy: lm.y, r: 3.4 * scale, fill: "#FBF5E9", stroke: "#9A5B2E", "stroke-width": 1 * scale }));
-    const label = make("text", {
-      x: lm.x, y: lm.y + 1.3 * scale,
-      "text-anchor": "middle",
-      "font-size": 3.4 * scale,
-      fill: "#9A5B2E",
-      "font-family": "serif",
-    });
-    label.textContent = lm.type;
-    g.appendChild(label);
+
+    const room = labeled.every((p) => Math.hypot(p.x - lm.x, p.y - lm.y) >= 8 * scale);
+    if (room) {
+      const label = make("text", {
+        x: lm.x, y: lm.y + 1.3 * scale,
+        "text-anchor": "middle",
+        "font-size": 3.4 * scale,
+        fill: "#9A5B2E",
+        "font-family": "serif",
+      });
+      label.textContent = lm.type;
+      g.appendChild(label);
+      labeled.push(lm);
+    }
 
     // 指で押せるように、見た目より広い当たり判定を重ねる
     const hit = make("circle", { cx: lm.x, cy: lm.y, r: 8 * scale, fill: "transparent" });
@@ -466,7 +474,7 @@ writeForm.addEventListener("submit", (e) => {
   data.state.currentStreak = applied.streak;
   data.state.lastEntryDate = today;
 
-  const born = growLandmarks(entry);
+  const born = growLandmarks(entry, from);
   save(data);
 
   document.getElementById("done-steps").innerHTML = `${steps}<span>歩</span>`;
@@ -479,8 +487,9 @@ writeForm.addEventListener("submit", (e) => {
   showScreen("done");
 });
 
-// 累計歩数が区切りを越えるたびに、その地点にランドマークを置く
-function growLandmarks(entry) {
+// 累計歩数が区切りを越えるたびに、その日の線の上にランドマークを置く。
+// 1日で2つ以上越えることがあるので、越えた地点それぞれに割り当てる
+function growLandmarks(entry, from) {
   const before = data.state.totalSteps - entry.steps;
   const crossed = Math.floor(data.state.totalSteps / STEPS_PER_LANDMARK) - Math.floor(before / STEPS_PER_LANDMARK);
   if (crossed <= 0) return null;
@@ -488,11 +497,13 @@ function growLandmarks(entry) {
   let last = null;
   for (let i = 0; i < crossed; i++) {
     const index = Math.floor(before / STEPS_PER_LANDMARK) + i + 1;
+    // 区切りに達したのが線のどのあたりかを求めて、そこに置く
+    const t = entry.steps > 0 ? (index * STEPS_PER_LANDMARK - before) / entry.steps : 1;
     last = {
       id: entry.id + "-lm" + i,
       type: LANDMARK_TYPES[index % LANDMARK_TYPES.length],
-      x: entry.x,
-      y: entry.y,
+      x: from.x + (entry.x - from.x) * t,
+      y: from.y + (entry.y - from.y) * t,
       entryId: entry.id,
       createdAt: entry.createdAt,
     };
