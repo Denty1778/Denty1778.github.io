@@ -271,6 +271,118 @@ function showScreen(name) {
 
 /* ---------- 地図 ---------- */
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+const INK = "#8A6A42";        // 地図の線
+const TERRAIN = "#B3A184";    // 山や森。主張しすぎない濃さ
+const PAPER = "#FBF5E9";
+const PAPER_EDGE = "#CDC0A6"; // 道の縁。薄すぎると道の輪郭が出ない
+
+function el(tag, attrs) {
+  const node = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+  return node;
+}
+
+// 同じ場所には毎回同じ地形が出るように、位置から決まる値を使う（乱数だが毎回同じ）
+function noise(n) {
+  const x = Math.sin(n * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+// まっすぐな線は地図らしくないので、途中を少しだけ横にずらす
+function roadPoints(from, to, seed, amp) {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len;
+  const ny = dx / len;
+  const parts = [];
+  const N = 3;
+
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const off = i === 0 || i === N ? 0 : (noise(seed * 7.3 + i) - 0.5) * amp;
+    parts.push(`${from.x + dx * t + nx * off},${from.y + dy * t + ny * off}`);
+  }
+  return parts.join(" ");
+}
+
+function stroke(points, color, width) {
+  return el("polyline", {
+    points, fill: "none", stroke: color,
+    "stroke-width": width, "stroke-linejoin": "round", "stroke-linecap": "round",
+  });
+}
+
+function mountainMark(x, y, s, color) {
+  const ink = color || TERRAIN;
+  const g = el("g", {});
+  g.appendChild(stroke(`${x - s},${y} ${x - s * 0.35},${y - s * 1.15} ${x + s * 0.3},${y}`, ink, s * 0.17));
+  g.appendChild(stroke(`${x - s * 0.05},${y} ${x + s * 0.45},${y - s * 0.78} ${x + s},${y}`, ink, s * 0.17));
+  return g;
+}
+
+function forestMark(x, y, s, color) {
+  const ink = color || TERRAIN;
+  const g = el("g", {});
+  [[-s * 0.62, 0], [0, -s * 0.28], [s * 0.62, 0]].forEach(([ox, oy], i) => {
+    const h = s * (0.75 + noise(x + y + i * 3) * 0.3);
+    g.appendChild(stroke(`${x + ox - s * 0.3},${y + oy} ${x + ox},${y + oy - h} ${x + ox + s * 0.3},${y + oy}`, ink, s * 0.17));
+  });
+  return g;
+}
+
+// ランドマークの記号。古い地図の描き方に寄せている
+function landmarkMark(type, x, y, s) {
+  const g = el("g", {});
+
+  if (type === "町") {
+    g.appendChild(el("rect", {
+      x: x - s * 0.55, y: y - s * 0.15, width: s * 1.1, height: s * 0.75,
+      fill: PAPER, stroke: INK, "stroke-width": s * 0.17,
+    }));
+    g.appendChild(el("polyline", {
+      points: `${x - s * 0.78},${y - s * 0.15} ${x},${y - s * 0.95} ${x + s * 0.78},${y - s * 0.15}`,
+      fill: PAPER, stroke: INK, "stroke-width": s * 0.17, "stroke-linejoin": "round",
+    }));
+    return g;
+  }
+
+  if (type === "湖") {
+    g.appendChild(el("ellipse", {
+      cx: x, cy: y, rx: s * 0.95, ry: s * 0.62,
+      fill: PAPER, stroke: INK, "stroke-width": s * 0.17,
+    }));
+    g.appendChild(el("path", {
+      d: `M ${x - s * 0.45} ${y + s * 0.1} q ${s * 0.22} ${-s * 0.22} ${s * 0.45} 0 q ${s * 0.22} ${s * 0.22} ${s * 0.45} 0`,
+      fill: "none", stroke: INK, "stroke-width": s * 0.13,
+    }));
+    return g;
+  }
+
+  if (type === "峠") {
+    g.appendChild(mountainMark(x - s * 0.45, y + s * 0.35, s * 0.75, INK));
+    g.appendChild(mountainMark(x + s * 0.5, y + s * 0.35, s * 0.7, INK));
+    return g;
+  }
+
+  if (type === "森") {
+    g.appendChild(forestMark(x, y + s * 0.3, s * 0.85, INK));
+    return g;
+  }
+
+  // 岬
+  g.appendChild(el("polyline", {
+    points: `${x - s * 0.9},${y - s * 0.4} ${x + s * 0.2},${y - s * 0.4} ${x + s * 0.85},${y + s * 0.6} ${x - s * 0.9},${y + s * 0.6}`,
+    fill: PAPER, stroke: INK, "stroke-width": s * 0.17, "stroke-linejoin": "round",
+  }));
+  g.appendChild(el("path", {
+    d: `M ${x - s * 0.9} ${y + s * 0.85} q ${s * 0.3} ${-s * 0.2} ${s * 0.6} 0 q ${s * 0.3} ${s * 0.2} ${s * 0.6} 0`,
+    fill: "none", stroke: INK, "stroke-width": s * 0.13,
+  }));
+  return g;
+}
+
 function drawMap() {
   mapSvg.innerHTML = "";
 
@@ -284,8 +396,34 @@ function drawMap() {
     minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
   });
 
+  // 道のわきに置く地形の位置を先に決める。枠の大きさを決めるときに含めないと、はみ出して切れる
+  const roadSpan = Math.max(maxX - minX, maxY - minY, 120);
+  const roughScale = (roadSpan * 1.24) / 100;
+  const terrain = [];
+
+  data.entries.forEach((e, i) => {
+    if (i % 3 !== 1) return;
+    const from = i === 0 ? { x: 0, y: 0 } : data.entries[i - 1];
+    const dx = e.x - from.x;
+    const dy = e.y - from.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const side = noise(i * 3.7) > 0.5 ? 1 : -1;
+    const away = (13 + noise(i * 5.1) * 9) * roughScale;
+    terrain.push({
+      x: (from.x + e.x) / 2 + (-dy / len) * away * side,
+      y: (from.y + e.y) / 2 + (dx / len) * away * side,
+      s: (3.2 + noise(i * 2.3) * 1.6) * roughScale,
+      mountain: noise(i * 9.3) > 0.45,
+    });
+  });
+
+  terrain.forEach((t) => {
+    minX = Math.min(minX, t.x - t.s * 1.2); maxX = Math.max(maxX, t.x + t.s * 1.2);
+    minY = Math.min(minY, t.y - t.s * 1.3); maxY = Math.max(maxY, t.y + t.s * 1.2);
+  });
+
   const span = Math.max(maxX - minX, maxY - minY, 120);
-  const pad = span * 0.12;
+  const pad = span * 0.08;
   const cx = (minX + maxX) / 2;
   const cy = (minY + maxY) / 2;
   const size = span + pad * 2;
@@ -293,44 +431,45 @@ function drawMap() {
 
   const scale = size / 100; // 線の太さを見た目で一定に保つ
 
-  const ns = "http://www.w3.org/2000/svg";
-  const make = (tag, attrs) => {
-    const el = document.createElementNS(ns, tag);
-    Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
-    return el;
-  };
+  terrain.forEach((t) => {
+    mapSvg.appendChild(t.mountain ? mountainMark(t.x, t.y, t.s) : forestMark(t.x, t.y, t.s));
+  });
 
-  // 出発点
-  mapSvg.appendChild(make("circle", { cx: 0, cy: 0, r: 1.6 * scale, fill: "#7C6C58" }));
-
-  // 一日ぶんずつ線を引く。色はその日のタグ
+  // 一日ぶんずつ道を引く。下に道の縁、その上にタグの色
   data.entries.forEach((e, i) => {
     const from = i === 0 ? { x: 0, y: 0 } : data.entries[i - 1];
     const tag = e.tags.length ? findTag(e.tags[0]) : null;
-    mapSvg.appendChild(
-      make("line", {
-        x1: from.x, y1: from.y, x2: e.x, y2: e.y,
-        stroke: tag ? tag.color : "#8A7A63",
-        "stroke-width": 1.7 * scale,
-        "stroke-linecap": "round",
-      })
-    );
+    const len = Math.hypot(e.x - from.x, e.y - from.y);
+    const pts = roadPoints(from, e, i + 1, Math.min(2.6 * scale, len * 0.18));
+
+    mapSvg.appendChild(el("polyline", {
+      points: pts, fill: "none", stroke: PAPER_EDGE,
+      "stroke-width": 3.4 * scale, "stroke-linecap": "round", "stroke-linejoin": "round",
+    }));
+    mapSvg.appendChild(el("polyline", {
+      points: pts, fill: "none", stroke: tag ? tag.color : "#8A7A63",
+      "stroke-width": 1.5 * scale, "stroke-linecap": "round", "stroke-linejoin": "round",
+    }));
   });
 
+  // 出発点
+  mapSvg.appendChild(el("circle", { cx: 0, cy: 0, r: 1.9 * scale, fill: PAPER, stroke: INK, "stroke-width": 0.7 * scale }));
+  mapSvg.appendChild(el("circle", { cx: 0, cy: 0, r: 0.7 * scale, fill: INK }));
+
   // ランドマーク。軌跡が折り返して近づくことがあるので、
-  // 名前が重なる場合は丸だけ描く（押せば名前は読める）
+  // 名前が重なる場合は記号だけ描く（押せば名前は読める）
   const labeled = [];
   data.landmarks.forEach((lm) => {
-    const g = make("g", { class: "landmark-hit" });
-    g.appendChild(make("circle", { cx: lm.x, cy: lm.y, r: 3.4 * scale, fill: "#FBF5E9", stroke: "#9A5B2E", "stroke-width": 1 * scale }));
+    const g = el("g", { class: "landmark-hit" });
+    g.appendChild(landmarkMark(lm.type, lm.x, lm.y, 3.6 * scale));
 
-    const room = labeled.every((p) => Math.hypot(p.x - lm.x, p.y - lm.y) >= 8 * scale);
+    const room = labeled.every((p) => Math.hypot(p.x - lm.x, p.y - lm.y) >= 9 * scale);
     if (room) {
-      const label = make("text", {
-        x: lm.x, y: lm.y + 1.3 * scale,
+      const label = el("text", {
+        x: lm.x, y: lm.y + 6.4 * scale,
         "text-anchor": "middle",
-        "font-size": 3.4 * scale,
-        fill: "#9A5B2E",
+        "font-size": 3.2 * scale,
+        fill: INK,
         "font-family": "serif",
       });
       label.textContent = lm.type;
@@ -339,16 +478,15 @@ function drawMap() {
     }
 
     // 指で押せるように、見た目より広い当たり判定を重ねる
-    const hit = make("circle", { cx: lm.x, cy: lm.y, r: 8 * scale, fill: "transparent" });
-    g.appendChild(hit);
+    g.appendChild(el("circle", { cx: lm.x, cy: lm.y, r: 8 * scale, fill: "transparent" }));
     g.addEventListener("click", () => openDetail(lm));
     mapSvg.appendChild(g);
   });
 
   // 旅人
   const last = data.entries.length ? data.entries[data.entries.length - 1] : { x: 0, y: 0 };
-  mapSvg.appendChild(make("circle", { cx: last.x, cy: last.y, r: 2.6 * scale, fill: "#33291E" }));
-  mapSvg.appendChild(make("circle", { cx: last.x, cy: last.y, r: 4.6 * scale, fill: "none", stroke: "#33291E", "stroke-width": 0.6 * scale, opacity: 0.4 }));
+  mapSvg.appendChild(el("circle", { cx: last.x, cy: last.y, r: 4.8 * scale, fill: "none", stroke: "#33291E", "stroke-width": 0.6 * scale, opacity: 0.35 }));
+  mapSvg.appendChild(el("circle", { cx: last.x, cy: last.y, r: 2.4 * scale, fill: "#33291E" }));
 }
 
 function refreshMap() {
