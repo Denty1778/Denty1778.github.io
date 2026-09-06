@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F7F8FA">
+<title>あとばらい家計簿</title>
+<meta name="description" content="カードで払った分が、いつ口座から出ていくのかが分かる家計簿。使った月と引き落とし月の両方で見られます。">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="あとばらい家計簿">
+<meta property="og:description" content="カードで払った分が、いつ口座から出ていくのかが分かる家計簿。使った月と引き落とし月の両方で見られます。">
+<meta property="og:url" content="https://denty1778.github.io/atobarai/">
+<meta property="og:site_name" content="あとばらい家計簿">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="あとばらい">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="stage">
+
+    <!-- ホーム -->
+    <section id="screen-home" class="screen is-active">
+      <div class="head">
+        <h1>あとばらい家計簿</h1>
+        <button type="button" class="chip-btn" id="go-settings">設定</button>
+      </div>
+
+      <div class="cal">
+        <div class="cal-axis" id="cal-axis">
+          <button type="button" class="axis-btn is-on" data-cal-axis="pay">引き落とし日</button>
+          <button type="button" class="axis-btn" data-cal-axis="used">使った日</button>
+        </div>
+
+        <div class="cal-nav">
+          <button type="button" class="nav-btn" id="cal-prev">‹</button>
+          <span class="month-label" id="cal-month"></span>
+          <button type="button" class="nav-btn" id="cal-next">›</button>
+        </div>
+
+        <div class="cal-grid" id="cal-grid"></div>
+        <p class="cal-total" id="cal-total"></p>
+        <div class="cal-detail" id="cal-detail"></div>
+      </div>
+
+      <div class="card highlight">
+        <p class="card-label">来月の引き落とし予定</p>
+        <p class="amount-big" id="next-pay">¥0</p>
+        <p class="card-sub" id="next-pay-month"></p>
+        <div id="next-breakdown" class="breakdown"></div>
+      </div>
+
+      <div class="two-up">
+        <div class="card">
+          <p class="card-label">今月使った</p>
+          <p class="amount-mid" id="this-used">¥0</p>
+          <p class="card-sub">使った日で集計</p>
+        </div>
+        <div class="card">
+          <p class="card-label">今月の引き落とし</p>
+          <p class="amount-mid" id="this-pay">¥0</p>
+          <p class="card-sub">口座から出る額</p>
+        </div>
+      </div>
+
+      <p class="hint" id="home-hint"></p>
+
+      <button type="button" class="primary-btn" id="go-write">記録する</button>
+      <button type="button" class="ghost-btn" id="go-list">記録を見る</button>
+    </section>
+
+    <!-- 記録 -->
+    <section id="screen-write" class="screen">
+      <button type="button" class="back-btn" data-back="home">← もどる</button>
+      <h2 id="write-title">記録する</h2>
+
+      <form id="write-form">
+        <label class="field">
+          <span class="label">金額</span>
+          <div class="amount-input">
+            <span class="yen">¥</span>
+            <input type="text" id="input-amount" inputmode="numeric" autocomplete="off" placeholder="0">
+          </div>
+        </label>
+
+        <label class="field">
+          <span class="label">日付</span>
+          <input type="date" id="input-date">
+        </label>
+
+        <div class="field">
+          <span class="label">支払い方法</span>
+          <div class="method-row" id="method-row"></div>
+          <p class="pay-note" id="pay-note"></p>
+        </div>
+
+        <div class="field">
+          <span class="label">カテゴリ</span>
+          <div class="chips" id="category-picker"></div>
+        </div>
+
+        <label class="field">
+          <span class="label">メモ（任意）</span>
+          <input type="text" id="input-memo" maxlength="60" autocomplete="off" placeholder="コンビニ、定期券 など">
+        </label>
+
+        <p class="error" id="write-error" hidden></p>
+        <button type="submit" class="primary-btn" id="write-btn">記録する</button>
+        <button type="button" class="danger-btn" id="delete-btn" hidden>この記録を削除</button>
+      </form>
+    </section>
+
+    <!-- 一覧 -->
+    <section id="screen-list" class="screen">
+      <button type="button" class="back-btn" data-back="home">← もどる</button>
+
+      <div class="axis-switch" id="axis-switch">
+        <button type="button" class="axis-btn is-on" data-axis="used">使った月</button>
+        <button type="button" class="axis-btn" data-axis="pay">引き落とし月</button>
+      </div>
+
+      <div class="month-nav">
+        <button type="button" class="nav-btn" id="prev-month">‹</button>
+        <span class="month-label" id="month-label"></span>
+        <button type="button" class="nav-btn" id="next-month">›</button>
+      </div>
+
+      <p class="month-total" id="month-total">¥0</p>
+      <p class="month-note" id="month-note"></p>
+
+      <div id="category-summary" class="summary"></div>
+      <div id="entry-list" class="entry-list"></div>
+    </section>
+
+    <!-- 設定 -->
+    <section id="screen-settings" class="screen">
+      <button type="button" class="back-btn" data-back="home">← もどる</button>
+      <h2>設定</h2>
+
+      <div class="setting-group">
+        <h3 class="setting-title">カード</h3>
+        <p class="setting-note">締め日と支払日を登録すると、記録したときに引き落とし日が自動で決まります。</p>
+        <div id="card-list" class="card-list"></div>
+        <button type="button" class="sub-btn wide" id="add-card">＋ カードを追加</button>
+      </div>
+
+      <div class="setting-group">
+        <h3 class="setting-title">カテゴリ</h3>
+        <div id="category-manage" class="tag-manage"></div>
+        <div class="inline-add">
+          <input type="text" id="new-category" maxlength="10" placeholder="カテゴリを追加" autocomplete="off">
+          <button type="button" id="add-category" class="sub-btn">追加</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <h3 class="setting-title">データ</h3>
+        <p class="setting-note" id="storage-note"></p>
+        <p class="backup-age" id="backup-age"></p>
+        <div class="row-2">
+          <button type="button" class="sub-btn" id="export-btn">バックアップを保存</button>
+          <button type="button" class="sub-btn" id="import-btn">バックアップから復元</button>
+          <input type="file" accept="application/json,.json" id="file-import" hidden>
+        </div>
+        <p class="backup-result" id="backup-result" hidden></p>
+        <p class="setting-note" id="backup-how"></p>
+      </div>
+    </section>
+
+    <!-- カードの編集 -->
+    <section id="screen-card" class="screen">
+      <button type="button" class="back-btn" data-back="settings">← もどる</button>
+      <h2 id="card-title">カードを追加</h2>
+
+      <form id="card-form">
+        <label class="field">
+          <span class="label">カード名</span>
+          <input type="text" id="card-name" maxlength="20" autocomplete="off" placeholder="楽天カード など">
+        </label>
+
+        <label class="field">
+          <span class="label">締め日</span>
+          <select id="card-closing"></select>
+        </label>
+
+        <label class="field">
+          <span class="label">支払い月</span>
+          <select id="card-offset">
+            <option value="0">締めたその月</option>
+            <option value="1" selected>翌月</option>
+            <option value="2">翌々月</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="label">支払い日</span>
+          <select id="card-payday"></select>
+        </label>
+
+        <p class="example" id="card-example"></p>
+
+        <p class="error" id="card-error" hidden></p>
+        <button type="submit" class="primary-btn" id="card-save">保存する</button>
+        <button type="button" class="danger-btn" id="card-delete" hidden>このカードを削除</button>
+      </form>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

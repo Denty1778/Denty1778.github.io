@@ -1,0 +1,907 @@
+:root {
+  --bg: #F7F8FA;
+  --card: #FFFFFF;
+  --card-alt: #F0F3F7;
+  --text: #1F2933;
+  --text-dim: #5A6672;
+  --text-faint: #626E7A;
+  --accent: #1F7A6B;
+  --accent-hover: #176356;
+  --accent-soft: #E6F2EF;
+  --line: #DFE4EA;
+  --line-strong: #C4CCD6;
+  --on-accent: #FFFFFF;
+  --wrong: #B03A45;
+  --ok: #2C7A4B;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+.stage {
+  min-height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px 56px;
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  max-width: 440px;
+}
+
+.screen.is-active {
+  display: block;
+}
+
+/* ---------- 共通 ---------- */
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+h2 {
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0 0 20px;
+}
+
+h3 {
+  margin: 0;
+}
+
+.primary-btn {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: var(--on-accent);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.primary-btn:hover,
+.primary-btn:focus-visible {
+  background: var(--accent-hover);
+  outline: none;
+}
+
+.ghost-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px;
+  background: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.ghost-btn:hover,
+.ghost-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+  outline: none;
+}
+
+.sub-btn {
+  padding: 13px 16px;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.sub-btn:hover,
+.sub-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+  outline: none;
+}
+
+.sub-btn.wide {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.danger-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px;
+  background: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  color: var(--wrong);
+  font-family: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.danger-btn:hover,
+.danger-btn:focus-visible {
+  border-color: var(--wrong);
+  outline: none;
+}
+
+.chip-btn {
+  flex-shrink: 0;
+  padding: 13px 14px;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.chip-btn:hover,
+.chip-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+  outline: none;
+}
+
+.back-btn {
+  display: inline-block;
+  margin: 0 0 16px -10px;
+  padding: 13px 10px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.back-btn:hover,
+.back-btn:focus-visible {
+  color: var(--text-dim);
+  outline: none;
+}
+
+.error {
+  color: var(--wrong);
+  font-size: 13px;
+  margin: 12px 0 0;
+}
+
+/* ---------- カレンダー ---------- */
+
+.cal {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.cal-axis {
+  display: flex;
+  background: var(--card-alt);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 10px;
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-dow {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-align: center;
+  padding: 2px 0 4px;
+}
+
+.cal-dow.sun { color: #B03A45; }
+.cal-dow.sat { color: #3A6FB0; }
+
+.cal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1px;
+  min-height: 46px;
+  padding: 4px 1px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  overflow: hidden;
+}
+
+.cal-day.is-blank {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.cal-day.is-today {
+  border-color: var(--line-strong);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cal-day.has-amount {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.cal-day[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.cal-day:hover,
+.cal-day:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.cal-amt {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-total {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: right;
+  margin: 10px 2px 0;
+}
+
+.cal-total b {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-detail {
+  margin-top: 10px;
+}
+
+.cal-detail:empty {
+  margin-top: 0;
+}
+
+.cal-detail-head {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 0 0 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.cal-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  padding: 3px 0;
+}
+
+.cal-row-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cal-row-sub {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-left: 6px;
+}
+
+.cal-row-val {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- ホーム ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.card.highlight {
+  background: var(--accent-soft);
+  border-color: #BFDDD6;
+}
+
+.card-label {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.card-sub {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 2px 0 0;
+}
+
+.amount-big {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--accent);
+  margin: 6px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.amount-mid {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 6px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.two-up {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.two-up .card {
+  flex: 1;
+  min-width: 0;
+}
+
+.breakdown {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #C9E0DA;
+}
+
+.breakdown-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  padding: 3px 0;
+}
+
+.breakdown-name {
+  color: var(--text-dim);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.breakdown-val {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown-date {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-left: 6px;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 14px 0 0;
+}
+
+/* ---------- 入力 ---------- */
+
+.field {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+input[type="text"],
+input[type="date"],
+select {
+  width: 100%;
+  padding: 13px 12px;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  transition: border-color 0.2s ease;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.amount-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 0 14px;
+  transition: border-color 0.2s ease;
+}
+
+.amount-input:focus-within {
+  border-color: var(--accent);
+}
+
+.yen {
+  font-size: 20px;
+  color: var(--text-faint);
+}
+
+.amount-input input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 14px 0;
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.amount-input input:focus {
+  outline: none;
+}
+
+.method-row,
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  min-height: 44px;
+  padding: 10px 14px;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.chip:hover,
+.chip:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.pay-note {
+  font-size: 13px;
+  color: var(--accent);
+  margin: 10px 0 0;
+}
+
+.pay-note.is-plain {
+  color: var(--text-faint);
+}
+
+.example {
+  font-size: 12px;
+  color: var(--text-faint);
+  background: var(--card-alt);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0;
+}
+
+/* ---------- 一覧 ---------- */
+
+.axis-switch {
+  display: flex;
+  gap: 0;
+  background: var(--card-alt);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 18px;
+}
+
+.axis-btn {
+  flex: 1;
+  padding: 13px 8px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.axis-btn.is-on {
+  background: var(--card);
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(31, 41, 51, 0.08);
+}
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nav-btn {
+  width: 44px;
+  height: 44px;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.nav-btn:hover,
+.nav-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+  outline: none;
+}
+
+.month-label {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.month-total {
+  font-size: 30px;
+  font-weight: 700;
+  text-align: center;
+  margin: 14px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.month-note {
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: center;
+  margin: 2px 0 20px;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.sum-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.sum-name {
+  width: 74px;
+  flex-shrink: 0;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sum-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--card-alt);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sum-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+.sum-val {
+  width: 78px;
+  flex-shrink: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.entry:hover,
+.entry:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.entry-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-title {
+  overflow-wrap: anywhere;
+}
+
+.entry-meta {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.entry-amount {
+  flex-shrink: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  color: var(--text-faint);
+  font-size: 14px;
+  text-align: center;
+  padding: 28px 0;
+  margin: 0;
+}
+
+/* ---------- 設定 ---------- */
+
+.setting-group {
+  margin-bottom: 34px;
+}
+
+.setting-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.setting-note {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 0 0 12px;
+}
+
+.card-list,
+.tag-manage {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.card-row:hover,
+.card-row:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.card-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-row-rule {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.arrow {
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.tag-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.tag-row .tag-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.del-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--text-faint);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.del-btn:hover,
+.del-btn:focus-visible {
+  border-color: var(--wrong);
+  color: var(--wrong);
+  outline: none;
+}
+
+.inline-add,
+.row-2 {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.inline-add input {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-2 .sub-btn {
+  flex: 1;
+}
+
+.backup-age {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin: 0 0 10px;
+}
+
+.backup-age.is-stale {
+  color: var(--wrong);
+}
+
+.backup-result {
+  font-size: 13px;
+  color: var(--ok);
+  margin: 12px 0 0;
+}
+
+.backup-result.is-error {
+  color: var(--wrong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
